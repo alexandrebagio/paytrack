@@ -39,6 +39,8 @@ class UserController extends Controller
                 ]
             );
 
+            $user->wallet()->create(['cash' => 0]);
+
             DB::commit();
 
             return $user;
