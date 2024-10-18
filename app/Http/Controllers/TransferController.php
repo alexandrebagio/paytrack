@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\PersonType;
 use App\Enums\TransferSituation;
+use App\Jobs\ProcessTransfer;
 use App\Models\Transfer;
 use App\Models\User;
 use Carbon\Carbon;
@@ -85,7 +86,7 @@ class TransferController extends Controller
 
             DB::commit();
 
-            // TODO Serviço em fila para tranferência
+            ProcessTransfer::dispatch($transfer)->onQueue('transfer');
 
             return [
                 'message' => 'Processing transfer...',
