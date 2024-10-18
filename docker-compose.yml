@@ -34,3 +34,4 @@ services:
             - '.:/application'
             - './phpdocker/php-fpm/php-ini-overrides.ini:/etc/php/8.3/fpm/conf.d/99-overrides.ini'
             - './phpdocker/php-fpm/php-ini-overrides.ini:/etc/php/8.3/cli/conf.d/99-overrides.ini'
+            - './phpdocker/php-fpm/supervisord.conf:/etc/supervisor/conf.d/supervisord.conf'
