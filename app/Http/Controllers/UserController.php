@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\PersonType;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -12,13 +13,8 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class UserController extends Controller
 {
-    public function index()
-    {
-        //
-    }
-
     #[Route('/api/user/store', methods: ['POST'])]
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         DB::beginTransaction();
 
@@ -43,7 +39,7 @@ class UserController extends Controller
 
             DB::commit();
 
-            return $user;
+            return response()->json(['data' => $user]);
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -52,11 +48,11 @@ class UserController extends Controller
     }
 
     #[Route('/api/user', methods: ['GET'])]
-    public function show(Request $request, User $user)
+    public function show(Request $request, User $user): JsonResponse
     {
         $user = $user->find($request->user()->id);
 
-        return $user;
+        return response()->json(['data' => $user]);
     }
 
     public function update(Request $request, User $user)

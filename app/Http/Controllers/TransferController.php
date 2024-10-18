@@ -8,33 +8,45 @@ use App\Jobs\ProcessTransfer;
 use App\Models\Transfer;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\Routing\Annotation\Route;
 
 class TransferController extends Controller
 {
-    public function index()
+    #[Route('/api/transfer/', methods: ['GET'])]
+    public function index(): JsonResponse
     {
-        //
+        $tranfers = Transfer::orderBy('created_at', 'desc')->paginate(25);
+
+        return response()->json($tranfers);
     }
 
-    public function store(Request $request)
+    #[Route('/api/transfer/', methods: ['POST'])]
+    public function store(Request $request): JsonResponse
     {
         DB::beginTransaction();
 
         try {
             $request->validate([
-                'payer' => 'required|integer|exists:users,id',
                 'payee' => 'required|integer|exists:users,id',
                 'value' => 'required|numeric|min:1|max:99999999999999999.99',
             ]);
 
             $value = (float) $request->value;
 
-            $payer = User::find($request->payer);
+            $payer = User::find($request->user()->id);
             $walletPayer = $payer->wallet()->first();
+
+            if ($request->user()->id === $request->payee) {
+                throw new HttpException(
+                    Response::HTTP_UNPROCESSABLE_ENTITY,
+                    'It is not allowed to make transfers to yourself.'
+                );
+            }
 
             if ($payer->type === PersonType::Legal->value) {
                 throw new HttpException(
@@ -51,7 +63,8 @@ class TransferController extends Controller
             }
 
             if (
-                Transfer::where($request->only('payer', 'payee'))
+                Transfer::where('payer', $request->user()->id)
+                    ->where('payee', $request->payee)
                     ->where('value', $value)
                     ->where('situation', TransferSituation::Pending->value)
                     ->exists()
@@ -63,7 +76,8 @@ class TransferController extends Controller
             }
 
             if (
-                Transfer::where($request->only('payer', 'payee'))
+                Transfer::where('payer', $request->user()->id)
+                    ->where('payee', $request->payee)
                     ->where('value', $value)
                     ->whereIn('situation', [TransferSituation::Pending->value, TransferSituation::Finish->value])
                     ->where('created_at', '>', Carbon::now()->subMinutes(10))
@@ -75,23 +89,26 @@ class TransferController extends Controller
                 );
             }
 
+            $walletPayer->update(['cash' => $walletPayer->cash - $value]);
+
             $walletPayee = User::find($request->payee)->wallet()->first();
 
             $transfer = Transfer::create([
                 'wallet_payer' => $walletPayer->id,
                 'wallet_payee' => $walletPayee->id,
                 'value' => $value,
-                ...$request->only('payer', 'payee'),
+                'payer' => $request->user()->id,
+                'payee' => $request->payee,
             ]);
 
             DB::commit();
 
             ProcessTransfer::dispatch($transfer)->onQueue('transfer');
 
-            return [
+            return response()->json([
                 'message' => 'Processing transfer...',
-                'id' => $transfer->id,
-            ];
+                'data' => ['id' => $transfer->id],
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -99,8 +116,11 @@ class TransferController extends Controller
         }
     }
 
-    public function show(Transfer $transfer)
+    #[Route('/api/transfer/{id}', methods: ['GET'])]
+    public function show(int $id): JsonResponse
     {
-        //
+        $transfer = Transfer::findOrFail($id);
+
+        return response()->json(['data' => $transfer]);
     }
 }

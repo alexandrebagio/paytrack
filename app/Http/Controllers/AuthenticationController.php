@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -11,7 +12,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class AuthenticationController extends Controller
 {
     #[Route('/api/login', methods: ['POST'])]
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): JsonResponse
     {
         $request->validate([
             'email' => ['required_without:identification_number', 'email'],
@@ -35,8 +36,11 @@ class AuthenticationController extends Controller
             );
         }
 
-        return [
-            'token' => $user->createToken('*')->plainTextToken,
-        ];
+        return response()->json([
+            'data' => [
+                'type' => 'Bearer',
+                'token' => $user->createToken('*')->plainTextToken,
+            ],
+        ]);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\TransferScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -20,6 +21,15 @@ class Transfer extends Model
         'error_message',
         'value',
     ];
+
+    protected $casts = [
+        'value' => 'float',
+    ];
+
+    protected static function booted(): void
+    {
+        static::addGlobalScope(new TransferScope());
+    }
 
     public function payer(): BelongsTo
     {
