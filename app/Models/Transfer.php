@@ -18,6 +18,7 @@ class Transfer extends Model
         'situation',
         'error',
         'error_message',
+        'value',
     ];
 
     public function payer(): BelongsTo

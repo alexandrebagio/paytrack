@@ -16,6 +16,7 @@ return new class () extends Migration {
             $table->unsignedBigInteger('payee');
             $table->unsignedBigInteger('wallet_payer');
             $table->unsignedBigInteger('wallet_payee');
+            $table->decimal('value', 19, 2);
             $table->enum('situation', ['P', 'E', 'F'])->default('P')->comment('Pending Error Finish');
             $table->boolean('error')->default(false);
             $table->text('error_message')->nullable();
