@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Scopes\TransferScope;
+use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -25,6 +26,11 @@ class Transfer extends Model
     protected $casts = [
         'value' => 'float',
     ];
+
+    protected function serializeDate(DateTimeInterface $date)
+    {
+        return $date->format('Y-m-d H:i:s');
+    }
 
     protected static function booted(): void
     {
