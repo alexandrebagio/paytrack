@@ -184,7 +184,7 @@ return [
             'connection' => 'redis',
             'queue' => ['transfer'],
             'balance' => 'auto',
-            'autoScalingStrategy' => 'time',
+            'autoScalingStrategy' => 'size',
             'maxProcesses' => 1,
             'maxTime' => 0,
             'maxJobs' => 0,
@@ -213,7 +213,7 @@ return [
             'transfers' => [
                 'maxProcesses' => 100,
                 'balanceMaxShift' => 1,
-                'balanceCooldown' => 3,
+                'balanceCooldown' => 10,
             ],
             'default' => [
                 'maxProcesses' => 200,
@@ -226,7 +226,7 @@ return [
             'transfers' => [
                 'maxProcesses' => 10,
                 'balanceMaxShift' => 1,
-                'balanceCooldown' => 3,
+                'balanceCooldown' => 10,
             ],
             'default' => [
                 'maxProcesses' => 100,

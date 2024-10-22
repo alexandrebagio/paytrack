@@ -117,8 +117,13 @@ class TransferController extends Controller
     }
 
     #[Route('/api/transfer/{id}', methods: ['GET'])]
-    public function show(int $id): JsonResponse
+    public function show(string $id, Request $request): JsonResponse
     {
+        $request->merge(['id' => $id]);
+        $request->validate([
+            'id' => ['required', 'integer'],
+        ]);
+
         $transfer = Transfer::findOrFail($id);
 
         return response()->json(['data' => $transfer]);
