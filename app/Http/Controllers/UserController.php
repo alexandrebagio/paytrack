@@ -56,9 +56,13 @@ class UserController extends Controller
     #[Route('/api/user', methods: ['GET'])]
     public function show(Request $request, User $user): JsonResponse
     {
-        $user = $user->find($request->user()->id);
+        try {
+            $user = $user->find($request->user()->id);
 
-        return response()->json(['data' => $user]);
+            return response()->json(['data' => $user]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 
     #[Route('/api/user/confirmation/{rememberToken}', methods: ['GET'])]
@@ -79,12 +83,5 @@ class UserController extends Controller
         } catch (\Throwable $th) {
             throw $th;
         }
-    }
-
-    public function email()
-    {
-        $user = User::first();
-
-        return view('mail.UserCreated', ['user' => $user]);
     }
 }
