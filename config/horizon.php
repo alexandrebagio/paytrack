@@ -195,7 +195,7 @@ return [
         ],
         'default' => [
             'connection' => 'redis',
-            'queue' => ['default', 'email'],
+            'queue' => ['default', 'mail'],
             'balance' => 'auto',
             'autoScalingStrategy' => 'time',
             'maxProcesses' => 1,

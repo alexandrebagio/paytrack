@@ -13,6 +13,8 @@ Route::group(
     }
 );
 
+Route::get('/user/confirmation/{rememberToken}', [UserController::class, 'confirmation']); // TODO passar a rota para front
+
 Route::group(
     ['prefix' => '/transfer', 'controller' => TransferController::class, 'middleware' => ['auth:sanctum']],
     function () {

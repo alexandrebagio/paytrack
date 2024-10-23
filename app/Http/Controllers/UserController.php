@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Enums\PersonType;
+use App\Mail\UserCreated;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -29,7 +32,7 @@ class UserController extends Controller
 
             $user = User::create(
                 [
-                    'email_verified_at' => Carbon::now(), //TODO - Email de verificação de conta nova
+                    'remember_token' => Str::random(10),
                     'password' => bcrypt($request->password),
                     ...$request->only('name', 'email', 'type', 'identification_number'),
                 ]
@@ -38,6 +41,9 @@ class UserController extends Controller
             $user->wallet()->create(['cash' => 0]);
 
             DB::commit();
+
+            $message = (new UserCreated($user))->onQueue('mail');
+            Mail::to($user->email)->queue($message);
 
             return response()->json(['data' => $user]);
         } catch (\Throwable $th) {
@@ -55,13 +61,30 @@ class UserController extends Controller
         return response()->json(['data' => $user]);
     }
 
-    public function update(Request $request, User $user)
+    #[Route('/api/user/confirmation/{rememberToken}', methods: ['GET'])]
+    public function confirmation(string $rememberToken, Request $request): JsonResponse
     {
-        //
+        try {
+            $request->merge(['remember_token' => $rememberToken]);
+            $request->validate([
+                'remember_token' => 'required|max:255|min:1',
+            ]);
+
+            $user = User::where('remember_token', $rememberToken)->firstOrFail();
+            $user->email_verified_at = Carbon::now();
+            $user->remember_token = null;
+            $user->save();
+
+            return response()->json(['data' => $user, 'message' => 'User verified']);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 
-    public function destroy(User $user)
+    public function email()
     {
-        //
+        $user = User::first();
+
+        return view('mail.UserCreated', ['user' => $user]);
     }
 }
