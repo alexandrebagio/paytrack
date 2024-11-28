@@ -9,7 +9,6 @@ Route::group(
     ['prefix' => '/user', 'controller' => UserController::class, 'middleware' => ['auth:sanctum']],
     function () {
         Route::get('/', 'show');
-        Route::post('/', 'store');
     }
 );
 
@@ -24,4 +23,5 @@ Route::group(
     }
 );
 
-Route::post('/login', AuthenticationController::class);
+Route::post('/login', AuthenticationController::class)->middleware('guest');
+Route::post('/user', [UserController::class, 'store'])->middleware('guest');

@@ -1,10 +1,11 @@
 <?php
 
+use App\Exceptions\AlreadyAuthenticatedException;
 use App\Http\Middleware\ForceJsonRequestHeader;
-use App\Http\Middleware\HorizonBasicAuthMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -15,9 +16,20 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->append(ForceJsonRequestHeader::class);
-        $middleware->appendToGroup('horizonBasicAuth', [
-            HorizonBasicAuthMiddleware::class,
-        ]);
+        $middleware->statefulApi();
+
+        $middleware->redirectUsersTo(function (Request $request) {
+            if ($request->expectsJson()) {
+                throw new AlreadyAuthenticatedException();
+            }
+
+            return '/';
+        });
+
+        // TODO verificar middleware somente web
+        // $middleware->appendToGroup('horizonBasicAuth', [
+        //     HorizonBasicAuthMiddleware::class,
+        // ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
