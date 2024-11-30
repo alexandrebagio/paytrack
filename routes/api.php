@@ -24,4 +24,5 @@ Route::group(
 );
 
 Route::post('/login', AuthenticationController::class)->middleware('guest');
+Route::post('/logout', [AuthenticationController::class, 'logout'])->middleware('auth:sanctum');
 Route::post('/user', [UserController::class, 'store'])->middleware('guest');

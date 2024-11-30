@@ -2,6 +2,7 @@
 
 use App\Exceptions\AlreadyAuthenticatedException;
 use App\Http\Middleware\ForceJsonRequestHeader;
+use App\Http\Middleware\HorizonBasicAuth;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -26,10 +27,9 @@ return Application::configure(basePath: dirname(__DIR__))
             return '/';
         });
 
-        // TODO verificar middleware somente web
-        // $middleware->appendToGroup('horizonBasicAuth', [
-        //     HorizonBasicAuthMiddleware::class,
-        // ]);
+        $middleware->appendToGroup('horizonBasicAuth', [
+            HorizonBasicAuth::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

@@ -33,4 +33,13 @@ class AuthenticationController extends Controller
             ],
         );
     }
+
+    #[Route('/api/logout', methods: ['POST'])]
+    public function logout(Request $request): JsonResponse
+    {
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return response()->json(['message' => 'Logout sucessful']);
+    }
 }
