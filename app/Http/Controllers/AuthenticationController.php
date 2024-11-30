@@ -21,9 +21,8 @@ class AuthenticationController extends Controller
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
-            $token = $request->user()->createToken('*');
 
-            return response()->json(['message' => 'Welcome!', 'token' => $token]);
+            return response()->json(['message' => 'Welcome!']);
         }
 
         throw ValidationException::withMessages(
